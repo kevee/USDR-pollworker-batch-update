@@ -4,9 +4,11 @@ import { StyleSheet, css } from 'aphrodite';
 
 function App() {
   const [workers, setWorker] = useState([]);
+  const [workerStatuses, setWorkerStatuses] = useState({});
   const [precinctLead, setPrecinctLead] = useState('');
   const [precinctDescription, setPrecinctDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
+  const [isLoadingPrecinct, setIsLoadingPrecinct] = useState(true);
   useEffect(() => {
     function getParams() {
       const urlPath = window.location.href.split('?');
@@ -18,20 +20,26 @@ function App() {
       const request = await axios.get(`/precinct?${params}`);
       setPrecinctDescription(request.data.description);
       setPrecinctLead(request.data.leadName);
-      setIsLoading(false);
+      setIsLoadingPrecinct(false);
     }
 
     async function getWorkerData() {
       const params = getParams();
       const request = await axios.get(`/workers?${params}`);
       setWorker(request.data.workerData);
-      setIsLoading(false);
+      setIsLoadingWorkers(false);
     }
     getPrecinctData().catch(console.error);
     getWorkerData().catch(console.error);
   }, []);
 
-  if (isLoading) {
+  const handleChange = (e) => {
+    const newState = { ...workerStatuses };
+    newState[e.target.id] = e.target.value;
+    setWorkerStatuses(newState);
+  };
+
+  if (isLoadingWorkers || isLoadingPrecinct) {
     return (<div>Loading..</div>);
   }
 
@@ -54,16 +62,16 @@ function App() {
         </thead>
         <tbody>
           {workers.map((worker) => (
-            <tr key={worker.firstName}>
+            <tr key={worker.id}>
               <td className={css(styles.cell)}>{worker.firstName}</td>
               <td className={css(styles.cell)}>{worker.lastName}</td>
               <td className={css(styles.cell)}>{worker.email}</td>
               <td className={css(styles.cell)}>{worker.phone}</td>
               <td className={css(styles.cell)}>
-                <select>
-                  <option>Select attendance</option>
-                  <option>Did attend</option>
-                  <option>No show</option>
+                <select onChange={handleChange} id={worker.id}>
+                  <option value="">Select attendance</option>
+                  <option value="yes">Did attend</option>
+                  <option value="no">No show</option>
                 </select>
               </td>
             </tr>

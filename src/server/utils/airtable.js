@@ -13,6 +13,7 @@ exports.getPollWorkers = async (baseId, workersTableId, precinctTableId, precinc
   for (const workerId of pollWorkers) {
     const workerRecord = await base(workersTableId).find(workerId);
     const relevantData = {
+      id: workerRecord.id,
       firstName: workerRecord.fields['First Name'],
       lastName: workerRecord.fields['Last Name'],
       address: workerRecord.fields['Full Mail Address'],
