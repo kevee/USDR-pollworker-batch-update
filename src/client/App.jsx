@@ -38,11 +38,10 @@ function App() {
   };
 
   const handleSubmit = async () => {
-    const { baseId, workersTableId } = queryString.parse(window.location.search);
+    const { configId } = queryString.parse(window.location.search);
     const postData = {
       workerStatuses,
-      baseId,
-      workersTableId,
+      configId,
     };
     setIsPostingData(true);
     try {

@@ -1,58 +1,81 @@
 const Airtable = require('airtable');
 
-const airtableConnection = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY });
+const configBaseAirtableConnection = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY });
 
-exports.getPollWorkers = async (baseId, workersTableId, precinctTableId, precinctId) => {
-  const base = airtableConnection.base(baseId);
+const getCountyConfig = async (configId) => {
+  const configBase = configBaseAirtableConnection.base(process.env.CONFIG_BASE_ID);
+  const configRecord = await configBase(process.env.CONFIG_TABLE_ID).find(configId);
+  return configRecord.fields;
+};
 
-  const precinctRecord = await base(precinctTableId).find(precinctId);
+exports.getPollWorkers = async (configId, precinctId) => {
+  const config = await getCountyConfig(configId);
 
-  const pollWorkers = precinctRecord.fields['Poll Workers'];
+  // TEMP: USE .env to protect my own API key
+  // const countyBaseAirtableConnection = new Airtable({ apiKey: config['API Key'] });
+  const countyBaseAirtableConnection = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY });
+  const base = countyBaseAirtableConnection.base(config['Base ID']);
+
+  const precinctRecord = await base(config['Precincts table ID']).find(precinctId);
+
+  const pollWorkers = precinctRecord.fields[config['Field name: Precincts - Poll Workers']];
 
   const workerData = [];
   for (const workerId of pollWorkers) {
-    const workerRecord = await base(workersTableId).find(workerId);
+    const workerRecord = await base(config['Poll Workers table ID']).find(workerId);
     const relevantData = {
       id: workerRecord.id,
-      firstName: workerRecord.fields['First Name'],
-      lastName: workerRecord.fields['Last Name'],
-      address: workerRecord.fields['Full Mail Address'],
-      phone: workerRecord.fields['Phone'],
-      email: workerRecord.fields['Email'],
-    }
+      firstName: workerRecord.fields[config['Field name: Poll Workers - First name']],
+      lastName: workerRecord.fields[config['Field name: Poll Workers - Last name']],
+      phone: workerRecord.fields[config['Field name: Poll Workers - Phone']],
+      email: workerRecord.fields[config['Field name: Poll Workers - Email']],
+    };
     workerData.push(relevantData);
   }
 
   return { workerData };
 };
 
-exports.getPrecinct = async (baseId, workersTableId, precinctTableId, precinctId) => {
-  const base = airtableConnection.base(baseId);
+exports.getPrecinct = async (configId, precinctId) => {
+  const config = await getCountyConfig(configId);
+  // TEMP: USE .env to protect my own API key
+  // const countyBaseAirtableConnection = new Airtable({ apiKey: config['API Key'] });
+  const countyBaseAirtableConnection = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY });
+  const base = countyBaseAirtableConnection.base(config['Base ID']);
 
-  const precinctRecord = await base(precinctTableId).find(precinctId);
+  const precinctRecord = await base(config['Precincts table ID']).find(precinctId);
 
-  const leadRecord = precinctRecord.fields['Precinct Lead'];
-  const description = precinctRecord.fields['Description'];
-  const workerRecord = await base(workersTableId).find(leadRecord[0]);
+  const leadRecord = precinctRecord.fields[config['Field name: Precinct - Lead']];
+  const description = precinctRecord.fields[config['Field name: Precinct - Description']];
+
+  const workerRecord = await base(config['Poll Workers table ID']).find(leadRecord[0]);
+  const leadFirstName = workerRecord.fields[config['Field name: Poll Workers - First name']];
+  const leadLastName = workerRecord.fields[config['Field name: Poll Workers - Last name']];
 
   const data = {
-    leadName: `${workerRecord.fields['First Name']} ${workerRecord.fields['Last Name']}`,
+    leadName: `${leadFirstName} ${leadLastName}`,
     description,
   };
 
   return data;
 };
 
-exports.updateWorkerStatuses = async (baseId, workersTableId, workerStatuses) => {
+exports.updateWorkerStatuses = async (configId, workerStatuses) => {
+  const config = await getCountyConfig(configId);
   try {
-    const base = airtableConnection.base(baseId);
+    // TEMP: USE .env to protect my own API key
+    // const countyBaseAirtableConnection = new Airtable({ apiKey: config['API Key'] });
+    const countyBaseAirtableConnection = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY });
+    const base = countyBaseAirtableConnection.base(config['Base ID']);
 
     const recordsToUpdate = Object.keys(workerStatuses).reduce((store, workerId) => {
-      const electionDayStatus = workerStatuses[workerId] === 'yes' ? 'Attended' : 'No Show';
+      const electionDayStatus = workerStatuses[workerId] === 'yes'
+        ? config['Field value: Poll Workers - status - Attended']
+        : config['Field value: Poll Workers - status - No show'];
       const recordData = {
         id: workerId,
         fields: {
-          'Election Day Status': electionDayStatus,
+          [config['Field name: Poll Workers - Election Day Status']]: electionDayStatus,
         },
       };
       store.push(recordData);
@@ -63,7 +86,7 @@ exports.updateWorkerStatuses = async (baseId, workersTableId, workerStatuses) =>
     const numRecords = recordsToUpdate.length;
     while (n < numRecords) {
       const batchOfRecordsToUpdate = recordsToUpdate.slice(n, n + 10);
-      await base(workersTableId).update(batchOfRecordsToUpdate);
+      await base(config['Poll Workers table ID']).update(batchOfRecordsToUpdate);
       n += 10;
     }
     return true;
