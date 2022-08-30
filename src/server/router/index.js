@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const { getPollWorkers, getPrecinct } = require('../utils/airtable');
+const { getPollWorkers, getPrecinct, updateWorkerStatuses } = require('../utils/airtable');
 
 const router = express.Router();
 
@@ -35,6 +35,15 @@ router.get('/precinct', async (req, res) => {
   const precinctData = await getPrecinct(baseId, workersTableId, precinctTableId, precinctId);
 
   res.json(precinctData);
+});
+
+router.post('/update', async (req, res) => {
+  const { workersTableId, baseId, workerStatuses } = req.body;
+  if (await updateWorkerStatuses(baseId, workersTableId, workerStatuses)) {
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(500);
+  }
 });
 
 // Handle React routing, return all other requests to React app

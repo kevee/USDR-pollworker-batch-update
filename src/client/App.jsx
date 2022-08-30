@@ -1,4 +1,5 @@
 import axios from 'axios';
+import queryString from 'query-string';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 
@@ -9,23 +10,20 @@ function App() {
   const [precinctDescription, setPrecinctDescription] = useState('');
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
   const [isLoadingPrecinct, setIsLoadingPrecinct] = useState(true);
+  const [isPostingData, setIsPostingData] = useState(false);
+  const [postStatus, setPostStatus] = useState('');
   useEffect(() => {
-    function getParams() {
-      const urlPath = window.location.href.split('?');
-      return urlPath[1];
-    }
-
     async function getPrecinctData() {
-      const params = getParams();
-      const request = await axios.get(`/precinct?${params}`);
+      const searchParams = window.location.search;
+      const request = await axios.get(`/precinct${searchParams}`);
       setPrecinctDescription(request.data.description);
       setPrecinctLead(request.data.leadName);
       setIsLoadingPrecinct(false);
     }
 
     async function getWorkerData() {
-      const params = getParams();
-      const request = await axios.get(`/workers?${params}`);
+      const searchParams = window.location.search;
+      const request = await axios.get(`/workers${searchParams}`);
       setWorker(request.data.workerData);
       setIsLoadingWorkers(false);
     }
@@ -39,6 +37,25 @@ function App() {
     setWorkerStatuses(newState);
   };
 
+  const handleSubmit = async () => {
+    const { baseId, workersTableId } = queryString.parse(window.location.search);
+    const postData = {
+      workerStatuses,
+      baseId,
+      workersTableId,
+    };
+    setIsPostingData(true);
+    try {
+      const request = await axios.post('/update', postData);
+      if (request.status === 200) {
+        setPostStatus('Attendance successfully saved');
+      }
+    } catch (error) {
+      setPostStatus('Oops, something went wrong, please try again or contact support');
+    }
+    setIsPostingData(false);
+  };
+
   if (isLoadingWorkers || isLoadingPrecinct) {
     return (<div>Loading..</div>);
   }
@@ -47,8 +64,11 @@ function App() {
     <div className={css(styles.app)}>
       <h1>Test County Poll Worker Attendance Batch Update</h1>
       <p>
-        <b>Precinct:</b> {precinctDescription} <br></br>
-        <b>Judge:</b> {precinctLead}
+        <b>Precinct: </b>
+        {precinctDescription}
+        <br />
+        <b>Judge: </b>
+        {precinctLead}
       </p>
       <table className={css(styles.table)}>
         <thead>
@@ -82,9 +102,11 @@ function App() {
         <button
           type="submit"
           className={css(styles.submit)}
+          onClick={handleSubmit}
         >
-          Submit
+          {isPostingData ? 'Submitting' : 'Submit'}
         </button>
+        <span className={css(styles.status)}>{postStatus}</span>
       </div>
     </div>
   );
@@ -115,6 +137,9 @@ const styles = StyleSheet.create({
     border: 'none',
     borderRadius: '8px',
     marginTop: '10px',
+  },
+  status: {
+    paddingLeft: '15px',
   },
 });
 

@@ -42,3 +42,33 @@ exports.getPrecinct = async (baseId, workersTableId, precinctTableId, precinctId
 
   return data;
 };
+
+exports.updateWorkerStatuses = async (baseId, workersTableId, workerStatuses) => {
+  try {
+    const base = airtableConnection.base(baseId);
+
+    const recordsToUpdate = Object.keys(workerStatuses).reduce((store, workerId) => {
+      const electionDayStatus = workerStatuses[workerId] === 'yes' ? 'Attended' : 'No Show';
+      const recordData = {
+        id: workerId,
+        fields: {
+          'Election Day Status': electionDayStatus,
+        },
+      };
+      store.push(recordData);
+      return store;
+    }, []);
+
+    let n = 0;
+    const numRecords = recordsToUpdate.length;
+    while (n < numRecords) {
+      const batchOfRecordsToUpdate = recordsToUpdate.slice(n, n + 10);
+      await base(workersTableId).update(batchOfRecordsToUpdate);
+      n += 10;
+    }
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};

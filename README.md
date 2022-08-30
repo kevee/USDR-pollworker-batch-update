@@ -3,8 +3,8 @@
 - npx nodemon
 
 # TODO
-- implement post action
 - clean up react code
+- implement proper logger
 - add data validation before post (all field not empty?)
 - scale to multiple counties? Load API keys and field names from a base?
 
