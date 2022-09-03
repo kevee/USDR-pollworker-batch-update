@@ -6,8 +6,7 @@ import { StyleSheet, css } from 'aphrodite';
 function App() {
   const [workers, setWorker] = useState([]);
   const [workerStatuses, setWorkerStatuses] = useState({});
-  const [precinctLead, setPrecinctLead] = useState('');
-  const [precinctDescription, setPrecinctDescription] = useState('');
+  const [precinct, setPrecinct] = useState({});
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
   const [isLoadingPrecinct, setIsLoadingPrecinct] = useState(true);
   const [isPostingData, setIsPostingData] = useState(false);
@@ -16,8 +15,12 @@ function App() {
     async function getPrecinctData() {
       const searchParams = window.location.search;
       const request = await axios.get(`/precinct${searchParams}`);
-      setPrecinctDescription(request.data.description);
-      setPrecinctLead(request.data.leadName);
+      const precinctData = {
+        countyName: request.data.countyName,
+        description: request.data.description,
+        lead: request.data.leadName,
+      };
+      setPrecinct(precinctData);
       setIsLoadingPrecinct(false);
     }
 
@@ -61,13 +64,13 @@ function App() {
 
   return (
     <div className={css(styles.app)}>
-      <h1>Test County Poll Worker Attendance Batch Update</h1>
+      <h1>{precinct.countyName} Worker Attendance Batch Update</h1>
       <p>
         <b>Precinct: </b>
-        {precinctDescription}
+        {precinct.description}
         <br />
         <b>Judge: </b>
-        {precinctLead}
+        {precinct.lead}
       </p>
       <table className={css(styles.table)}>
         <thead>
