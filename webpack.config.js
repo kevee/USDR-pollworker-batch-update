@@ -1,17 +1,17 @@
-const CopyPlugin = require('copy-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  entry: './src/client/index.jsx',
+  entry: "./src/client/index.jsx",
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         resolve: {
-          extensions: ['.js', '.jsx'],
+          extensions: [".js", ".jsx"],
         },
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
         },
       },
     ],
@@ -19,8 +19,8 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: './src/client/static/index.html' },
-        { from: './src/client/static/usdr_logo.svg' },
+        { from: "./src/client/static/index.html" },
+        { from: "./src/client/static/usdr_logo.svg" },
       ],
     }),
   ],

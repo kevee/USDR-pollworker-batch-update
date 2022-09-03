@@ -1,11 +1,15 @@
-const express = require('express');
-const path = require('path');
+const express = require("express");
+const path = require("path");
 
-const { getPollWorkers, getPrecinct, updateWorkerStatuses } = require('../utils/airtable');
+const {
+  getPollWorkers,
+  getPrecinct,
+  updateWorkerStatuses,
+} = require("../utils/airtable");
 
 const router = express.Router();
 
-router.get('/workers', async (req, res) => {
+router.get("/workers", async (req, res) => {
   const { configId, precinctId } = req.query;
   if (!configId || !precinctId) {
     res.sendStatus(300);
@@ -16,7 +20,7 @@ router.get('/workers', async (req, res) => {
   res.json(workerData);
 });
 
-router.get('/precinct', async (req, res) => {
+router.get("/precinct", async (req, res) => {
   const { configId, precinctId } = req.query;
   if (!configId || !precinctId) {
     res.sendStatus(300);
@@ -27,7 +31,7 @@ router.get('/precinct', async (req, res) => {
   res.json(precinctData);
 });
 
-router.post('/update', async (req, res) => {
+router.post("/update", async (req, res) => {
   const { configId, workerStatuses } = req.body;
   if (await updateWorkerStatuses(configId, workerStatuses)) {
     res.sendStatus(200);
@@ -37,8 +41,8 @@ router.post('/update', async (req, res) => {
 });
 
 // Handle React routing, return all other requests to React app
-router.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../../dist', 'index.html'));
+router.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../../dist", "index.html"));
 });
 
 exports.router = router;
