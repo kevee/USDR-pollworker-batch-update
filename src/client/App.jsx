@@ -66,75 +66,77 @@ function App() {
 
   return (
     <div className={css(styles.app)}>
-      <div className={css(styles.topBar)}>{precinct.countyName}</div>
-      <div className={css(styles.info)}>
-        <div className={css(styles.infoRow)}>
-          <div className={css(styles.infoLabel)}>Precinct: </div>
-          <div className={css(styles.infoText)}>{precinct.description}</div>
+      <div className={css(styles.content)}>
+        <div className={css(styles.topBar)}>{precinct.countyName}</div>
+        <div className={css(styles.info)}>
+          <div className={css(styles.infoRow)}>
+            <div className={css(styles.infoLabel)}>Precinct: </div>
+            <div className={css(styles.infoText)}>{precinct.description}</div>
+          </div>
+          <div className={css(styles.infoRow)}>
+            <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
+            <div className={css(styles.infoText)}>{precinct.lead}</div>
+          </div>
+          <div className={css(styles.infoRow)}>
+            <div className={css(styles.infoLabel)}>Instructions: </div>
+            <div
+              className={css(styles.infoText)}
+              dangerouslySetInnerHTML={{__html: precinct.instructions}}
+            />
+          </div>
         </div>
-        <div className={css(styles.infoRow)}>
-          <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
-          <div className={css(styles.infoText)}>{precinct.lead}</div>
-        </div>
-        <div className={css(styles.infoRow)}>
-          <div className={css(styles.infoLabel)}>Instructions: </div>
-          <div
-            className={css(styles.infoText)}
-            dangerouslySetInnerHTML={{__html: precinct.instructions}}
-          />
-        </div>
-      </div>
 
-      <table className={css(styles.table)}>
-        <thead>
-          <tr>
-            <th className={css(styles.headerCell)}>First Name</th>
-            <th className={css(styles.headerCell)}>Last Name</th>
-            <th className={css(styles.headerCell)}>Email</th>
-            <th className={css(styles.headerCell)}>Phone</th>
-            <th className={css(styles.headerCell)}>&nbsp;</th>
-          </tr>
-        </thead>
-        <tbody>
-          {workers.map((worker) => (
-            <tr key={worker.id}>
-              <td className={css(styles.cell)}>{worker.firstName}</td>
-              <td className={css(styles.cell)}>{worker.lastName}</td>
-              <td className={css(styles.cell)}>{worker.email}</td>
-              <td className={css(styles.cell)}>{worker.phone}</td>
-              <td className={css(styles.cell)}>
-                <button
-                  className={css([styles.actionButton, workerStatuses[worker.id] === 'yes' ? styles.attendancePositive : ''])}
-                  onClick={setStatus}
-                  value="yes"
-                  id={worker.id}
-                  type="button"
-                >
-                  Did attend
-                </button>
-                <button
-                  className={css([styles.actionButton, workerStatuses[worker.id] === 'no' ? styles.attendanceNegative : ''])}
-                  onClick={setStatus}
-                  value="no"
-                  id={worker.id}
-                  type="button"
-                >
-                  No Show
-                </button>
-              </td>
+        <table className={css(styles.table)}>
+          <thead>
+            <tr>
+              <th className={css(styles.headerCell)}>First Name</th>
+              <th className={css(styles.headerCell)}>Last Name</th>
+              <th className={css(styles.headerCell)}>Email</th>
+              <th className={css(styles.headerCell)}>Phone</th>
+              <th className={css(styles.headerCell)} width="200px">&nbsp;</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div>
-        <button
-          type="submit"
-          className={css(styles.submit)}
-          onClick={handleSubmit}
-        >
-          {isPostingData ? 'Submitting' : 'Submit Attendance'}
-        </button>
-        <span className={css(styles.status)}>{postStatus}</span>
+          </thead>
+          <tbody>
+            {workers.map((worker) => (
+              <tr key={worker.id}>
+                <td className={css(styles.cell)}>{worker.firstName}</td>
+                <td className={css(styles.cell)}>{worker.lastName}</td>
+                <td className={css(styles.cell)}>{worker.email}</td>
+                <td className={css(styles.cell)}>{worker.phone}</td>
+                <td className={css(styles.cell)}>
+                  <button
+                    className={css([styles.actionButton, workerStatuses[worker.id] === 'yes' ? styles.attendancePositive : ''])}
+                    onClick={setStatus}
+                    value="yes"
+                    id={worker.id}
+                    type="button"
+                  >
+                    Did attend
+                  </button>
+                  <button
+                    className={css([styles.actionButton, workerStatuses[worker.id] === 'no' ? styles.attendanceNegative : ''])}
+                    onClick={setStatus}
+                    value="no"
+                    id={worker.id}
+                    type="button"
+                  >
+                    No Show
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div>
+          <button
+            type="submit"
+            className={css(styles.submit)}
+            onClick={handleSubmit}
+          >
+            {isPostingData ? 'Submitting' : 'Submit Attendance'}
+          </button>
+          <span className={css(styles.status)}>{postStatus}</span>
+        </div>
       </div>
       <div className={css(styles.footer)}>
         <img src="usdr_logo.svg" alt="USDR logo" height={35} />
@@ -167,6 +169,10 @@ const styles = StyleSheet.create({
     width: '100%',
     fontWeight: 900,
     fontSize: '19px',
+    boxShadow: '0 0 11px 0px rgb(0 0 0 / 10%)',
+  },
+  content: {
+    minHeight: 'calc(100vh - 160px)',
   },
   info: {
     display: 'flex',
@@ -175,7 +181,7 @@ const styles = StyleSheet.create({
   infoRow: {
     display: 'flex',
     flexDirection: 'column',
-    marginRight: '30px',
+    marginRight: '70px',
   },
   infoLabel: {
     fontWeight: 'bold',
@@ -191,19 +197,22 @@ const styles = StyleSheet.create({
   headerCell: {
     textAlign: 'left',
     padding: '5px',
-    borderBottom: '1px solid #607d8b',
+    borderBottom: '2px solid #0075db',
+    color: '#0075db',
+    fontWeight: 500,
   },
   cell: {
-    padding: '5px',
+    padding: '10px 5px',
     borderBottom: '1px solid #dad9d9',
   },
   actionButton: {
-    padding: '3px 7px',
+    padding: '7px 15px',
     marginRight: '4px',
     border: 'none',
     color: '#999',
     cursor: 'pointer',
     backgroundColor: '#EFEFEF',
+    borderRadius: '7px',
   },
   attendancePositive: {
     backgroundColor: '#4caf50',
@@ -222,6 +231,10 @@ const styles = StyleSheet.create({
     marginTop: '20px',
     cursor: 'pointer',
     fontWeight: 'bold',
+    transition: 'background-color 450ms cubic-bezier(.645, .445, .355, 1)',
+    ':hover': {
+      backgroundColor: '#0065bd',
+    },
   },
   status: {
     paddingLeft: '15px',
