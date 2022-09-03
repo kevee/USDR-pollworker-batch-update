@@ -20,6 +20,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: './src/client/static/index.html' },
+        { from: './src/client/static/usdr_logo.svg' },
       ],
     }),
   ],

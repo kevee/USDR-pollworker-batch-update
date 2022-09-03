@@ -46,6 +46,8 @@ exports.getPrecinct = async (configId, precinctId) => {
   const precinctRecord = await base(config['Precincts table ID']).find(precinctId);
 
   const countyName = config['County Name'];
+  const leadTitle = config['Lead Title'];
+  const instructions = config['UI Instructions'];
   const description = precinctRecord.fields[config['Field name: Precinct - Description']];
   const leadRecord = precinctRecord.fields[config['Field name: Precinct - Lead']];
 
@@ -55,6 +57,8 @@ exports.getPrecinct = async (configId, precinctId) => {
 
   const data = {
     countyName,
+    leadTitle,
+    instructions,
     description,
     leadName: `${leadFirstName} ${leadLastName}`,
   };

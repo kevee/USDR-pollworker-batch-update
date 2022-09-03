@@ -1,7 +1,7 @@
 import axios from 'axios';
 import queryString from 'query-string';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, css } from 'aphrodite';
+import { StyleSheet, css } from 'aphrodite/no-important';
 
 function App() {
   const [workers, setWorker] = useState([]);
@@ -19,6 +19,8 @@ function App() {
         countyName: request.data.countyName,
         description: request.data.description,
         lead: request.data.leadName,
+        leadTitle: request.data.leadTitle,
+        instructions: request.data.instructions.replace('\n', '<br />'),
       };
       setPrecinct(precinctData);
       setIsLoadingPrecinct(false);
@@ -34,7 +36,7 @@ function App() {
     getWorkerData().catch(console.error);
   }, []);
 
-  const handleChange = (e) => {
+  const setStatus = (e) => {
     const newState = { ...workerStatuses };
     newState[e.target.id] = e.target.value;
     setWorkerStatuses(newState);
@@ -59,19 +61,30 @@ function App() {
   };
 
   if (isLoadingWorkers || isLoadingPrecinct) {
-    return (<div>Loading..</div>);
+    return (<div className={css(styles.loading)}>Loading..</div>);
   }
 
   return (
     <div className={css(styles.app)}>
-      <h1>{precinct.countyName} Worker Attendance Batch Update</h1>
-      <p>
-        <b>Precinct: </b>
-        {precinct.description}
-        <br />
-        <b>Judge: </b>
-        {precinct.lead}
-      </p>
+      <div className={css(styles.topBar)}>{precinct.countyName}</div>
+      <div className={css(styles.info)}>
+        <div className={css(styles.infoRow)}>
+          <div className={css(styles.infoLabel)}>Precinct: </div>
+          <div className={css(styles.infoText)}>{precinct.description}</div>
+        </div>
+        <div className={css(styles.infoRow)}>
+          <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
+          <div className={css(styles.infoText)}>{precinct.lead}</div>
+        </div>
+        <div className={css(styles.infoRow)}>
+          <div className={css(styles.infoLabel)}>Instructions: </div>
+          <div
+            className={css(styles.infoText)}
+            dangerouslySetInnerHTML={{__html: precinct.instructions}}
+          />
+        </div>
+      </div>
+
       <table className={css(styles.table)}>
         <thead>
           <tr>
@@ -90,11 +103,24 @@ function App() {
               <td className={css(styles.cell)}>{worker.email}</td>
               <td className={css(styles.cell)}>{worker.phone}</td>
               <td className={css(styles.cell)}>
-                <select onChange={handleChange} id={worker.id}>
-                  <option value="">Select attendance</option>
-                  <option value="yes">Did attend</option>
-                  <option value="no">No show</option>
-                </select>
+                <button
+                  className={css([styles.actionButton, workerStatuses[worker.id] === 'yes' ? styles.attendancePositive : ''])}
+                  onClick={setStatus}
+                  value="yes"
+                  id={worker.id}
+                  type="button"
+                >
+                  Did attend
+                </button>
+                <button
+                  className={css([styles.actionButton, workerStatuses[worker.id] === 'no' ? styles.attendanceNegative : ''])}
+                  onClick={setStatus}
+                  value="no"
+                  id={worker.id}
+                  type="button"
+                >
+                  No Show
+                </button>
               </td>
             </tr>
           ))}
@@ -106,9 +132,15 @@ function App() {
           className={css(styles.submit)}
           onClick={handleSubmit}
         >
-          {isPostingData ? 'Submitting' : 'Submit'}
+          {isPostingData ? 'Submitting' : 'Submit Attendance'}
         </button>
         <span className={css(styles.status)}>{postStatus}</span>
+      </div>
+      <div className={css(styles.footer)}>
+        <img src="usdr_logo.svg" alt="USDR logo" height={35} />
+        <div className={css(styles.footerText)}>
+          This app was provided by the U.S. Digital Response
+        </div>
       </div>
     </div>
   );
@@ -117,7 +149,40 @@ function App() {
 const styles = StyleSheet.create({
   app: {
     fontFamily: 'Helvetica, Arial',
-    padding: '30px',
+    padding: '40px 35px',
+  },
+  loading: {
+    fontFamily: 'Helvetica, Arial',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 14px)',
+  },
+  topBar: {
+    position: 'fixed',
+    borderBottom: '1px solid #e9e9e9',
+    top: 0,
+    left: 0,
+    padding: '15px 42px',
+    width: '100%',
+    fontWeight: 900,
+    fontSize: '19px',
+  },
+  info: {
+    display: 'flex',
+    padding: '25px 0px',
+  },
+  infoRow: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginRight: '30px',
+  },
+  infoLabel: {
+    fontWeight: 'bold',
+    paddingTop: '10px',
+  },
+  infoText: {
+    paddingTop: '2px',
   },
   table: {
     width: '100%',
@@ -128,20 +193,50 @@ const styles = StyleSheet.create({
     padding: '5px',
     borderBottom: '1px solid #607d8b',
   },
-  cell:{
+  cell: {
     padding: '5px',
     borderBottom: '1px solid #dad9d9',
   },
+  actionButton: {
+    padding: '3px 7px',
+    marginRight: '4px',
+    border: 'none',
+    color: '#999',
+    cursor: 'pointer',
+    backgroundColor: '#EFEFEF',
+  },
+  attendancePositive: {
+    backgroundColor: '#4caf50',
+    color: 'white',
+  },
+  attendanceNegative: {
+    backgroundColor: 'red',
+    color: 'white',
+  },
   submit: {
-    backgroundColor: '#0595d6',
+    backgroundColor: '#0075db',
     color: 'white',
     padding: '10px 20px',
     border: 'none',
     borderRadius: '8px',
-    marginTop: '10px',
+    marginTop: '20px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
   },
   status: {
     paddingLeft: '15px',
+  },
+  footer:{
+    marginTop: '55px',
+    display: 'flex',
+  },
+  footerText: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '50%',
+    color: '#999',
+    paddingLeft: '25px',
+    fontSize: '12px',
   },
 });
 
