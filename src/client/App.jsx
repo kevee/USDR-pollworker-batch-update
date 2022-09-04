@@ -11,6 +11,7 @@ function App() {
   const [isLoadingPrecinct, setIsLoadingPrecinct] = useState(true);
   const [isPostingData, setIsPostingData] = useState(false);
   const [postStatus, setPostStatus] = useState("");
+  const [hasError, setHasError] = useState(false);
   useEffect(() => {
     async function getPrecinctData() {
       const searchParams = window.location.search;
@@ -32,8 +33,16 @@ function App() {
       setWorker(request.data.workerData);
       setIsLoadingWorkers(false);
     }
-    getPrecinctData().catch(console.error);
-    getWorkerData().catch(console.error);
+    getPrecinctData().catch((err) => {
+      if(err){
+        setHasError(true);
+      }
+    });
+    getWorkerData().catch((err) => {
+      if(err){
+        setHasError(true);
+      }
+    });
   }, []);
 
   const setStatus = (e) => {
@@ -61,6 +70,10 @@ function App() {
     }
     setIsPostingData(false);
   };
+
+  if (hasError) {
+    return <div className={css(styles.loading)}>Something went wrong loading your data, please try again or contact support</div>;
+  }
 
   if (isLoadingWorkers || isLoadingPrecinct) {
     return <div className={css(styles.loading)}>Loading..</div>;
