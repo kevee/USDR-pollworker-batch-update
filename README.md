@@ -1,5 +1,6 @@
 # Start in development
 
+- yarn install
 - yarn run dev
 - npx nodemon
 
