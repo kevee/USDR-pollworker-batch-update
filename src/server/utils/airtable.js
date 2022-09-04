@@ -8,7 +8,7 @@ const configBaseAirtableConnection = new Airtable({
 const getCountyConfig = async (configId) => {
   try{
     const configBase = configBaseAirtableConnection.base(
-      process.env.CONFIG_BASE_I
+      process.env.CONFIG_BASE_ID
     );
     const configRecord = await configBase(process.env.CONFIG_TABLE_ID).find(
       configId
