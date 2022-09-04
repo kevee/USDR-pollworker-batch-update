@@ -1,4 +1,5 @@
 const Airtable = require("airtable");
+const { logger } = require("./logger");
 
 const configBaseAirtableConnection = new Airtable({
   apiKey: process.env.AIRTABLE_API_KEY,
@@ -7,14 +8,14 @@ const configBaseAirtableConnection = new Airtable({
 const getCountyConfig = async (configId) => {
   try{
     const configBase = configBaseAirtableConnection.base(
-      process.env.CONFIG_BASE_ID
+      process.env.CONFIG_BASE_I
     );
     const configRecord = await configBase(process.env.CONFIG_TABLE_ID).find(
       configId
     );
     return configRecord.fields;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
     return {};
   }
 };
@@ -56,7 +57,7 @@ exports.getPollWorkers = async (configId, precinctId) => {
 
     return { workerData };
   } catch(err){
-    console.log(err);
+    logger.error(err);
     return {};
   }
   
@@ -102,7 +103,7 @@ exports.getPrecinct = async (configId, precinctId) => {
 
     return data;
   } catch(err){
-    console.log(err);
+    logger.error(err);
     return {};
   }
 };
@@ -147,7 +148,7 @@ exports.updateWorkerStatuses = async (configId, workerStatuses) => {
     }
     return true;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
     return false;
   }
 };
