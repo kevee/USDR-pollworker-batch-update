@@ -48,8 +48,14 @@ function App() {
   }, []);
 
   const setStatus = (e) => {
+    const workerId = e.target.id;
+    const workerAttendanceStatus = e.target.value;
     const newState = { ...workerStatuses };
-    newState[e.target.id] = e.target.value;
+    if(workerStatuses[workerId] === workerAttendanceStatus){
+      newState[workerId] = "";
+    } else {
+      newState[workerId] = workerAttendanceStatus;
+    }
     setWorkerStatuses(newState);
   };
 
