@@ -17,12 +17,14 @@ function App() {
       const searchParams = window.location.search;
       const request = await axios.get(`/precinct${searchParams}`);
       const precinctData = {
+        appTitle: request.data.appTitle,
         countyName: request.data.countyName,
         description: request.data.description,
         lead: request.data.leadName,
         leadTitle: request.data.leadTitle,
         instructions: request.data.instructions.replace("\n", "<br />"),
       };
+      document.title = precinctData.appTitle;
       setPrecinct(precinctData);
       setIsLoadingPrecinct(false);
     }

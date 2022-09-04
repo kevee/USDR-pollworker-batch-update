@@ -78,6 +78,7 @@ exports.getPrecinct = async (configId, precinctId) => {
     );
 
     const countyName = config["County Name"];
+    const appTitle = config["App Title"];
     const leadTitle = config["Lead Title"];
     const instructions = config["UI Instructions"];
     const description =
@@ -94,6 +95,7 @@ exports.getPrecinct = async (configId, precinctId) => {
       workerRecord.fields[config["Field name: Poll Workers - Last name"]];
 
     const data = {
+      appTitle,
       countyName,
       leadTitle,
       instructions,
