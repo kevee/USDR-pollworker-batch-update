@@ -59,12 +59,25 @@ function App() {
     setWorkerStatuses(newState);
   };
 
+  const countMissingStatuses = () => {
+    const numMissingStatuses = workers.reduce((currentCount, worker) => {
+      if(!workerStatuses[worker.id]){
+        return currentCount + 1;
+      }
+      return currentCount;
+    }, 0);
+    return numMissingStatuses;
+  }
+
+  const numMissingStatuses = countMissingStatuses();
+
   const handleSubmit = async () => {
     const { configId } = queryString.parse(window.location.search);
     const postData = {
       workerStatuses,
       configId,
     };
+
     setIsPostingData(true);
     try {
       const request = await axios.post("/update", postData);
@@ -91,21 +104,36 @@ function App() {
     <div className={css(styles.app)}>
       <div className={css(styles.content)}>
         <div className={css(styles.topBar)}>{precinct.countyName}</div>
-        <div className={css(styles.info)}>
-          <div className={css(styles.infoRow)}>
-            <div className={css(styles.infoLabel)}>Precinct: </div>
-            <div className={css(styles.infoText)}>{precinct.description}</div>
+        <div className={css(styles.head)}>
+          <div className={css(styles.info)}>
+            <div className={css(styles.infoRow)}>
+              <div className={css(styles.infoLabel)}>Precinct: </div>
+              <div className={css(styles.infoText)}>{precinct.description}</div>
+            </div>
+            <div className={css(styles.infoRow)}>
+              <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
+              <div className={css(styles.infoText)}>{precinct.lead}</div>
+            </div>
+            <div className={css(styles.infoRow)}>
+              <div className={css(styles.infoLabel)}>Instructions: </div>
+              <div
+                className={css(styles.infoText)}
+                dangerouslySetInnerHTML={{ __html: precinct.instructions }}
+              />
+            </div>
           </div>
-          <div className={css(styles.infoRow)}>
-            <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
-            <div className={css(styles.infoText)}>{precinct.lead}</div>
-          </div>
-          <div className={css(styles.infoRow)}>
-            <div className={css(styles.infoLabel)}>Instructions: </div>
-            <div
-              className={css(styles.infoText)}
-              dangerouslySetInnerHTML={{ __html: precinct.instructions }}
-            />
+          <div className={css(styles.actionBox)}>
+            <button
+              type="submit"
+              className={css(styles.submit)}
+              onClick={handleSubmit}
+            >Submit Attendance</button>
+            <div className={css(styles.selectionStatus)}>
+              {numMissingStatuses} people pending
+            </div>
+            <div className={css(styles.postStatus)}>
+              {isPostingData ? "Submitting" : postStatus}
+            </div>
           </div>
         </div>
 
@@ -162,16 +190,6 @@ function App() {
             ))}
           </tbody>
         </table>
-        <div>
-          <button
-            type="submit"
-            className={css(styles.submit)}
-            onClick={handleSubmit}
-          >
-            {isPostingData ? "Submitting" : "Submit Attendance"}
-          </button>
-          <span className={css(styles.status)}>{postStatus}</span>
-        </div>
       </div>
       <div className={css(styles.footer)}>
         <img src="usdr_logo.svg" alt="USDR logo" height={35} />
@@ -187,6 +205,7 @@ const styles = StyleSheet.create({
   app: {
     fontFamily: "Helvetica, Arial",
     padding: "40px 35px",
+    fontSize: "14px",
   },
   loading: {
     fontFamily: "Helvetica, Arial",
@@ -209,6 +228,10 @@ const styles = StyleSheet.create({
   content: {
     minHeight: "calc(100vh - 160px)",
   },
+  head: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
   info: {
     display: "flex",
     padding: "25px 0px",
@@ -224,6 +247,26 @@ const styles = StyleSheet.create({
   },
   infoText: {
     paddingTop: "2px",
+  },
+  actionBox: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    padding: "25px 0px",
+    minWidth: "180px",
+  },
+  selectionStatus: {
+    textAlign: "center",
+    color: "#999",
+    paddingTop: "7px",
+    fontSize: "12px",
+  },
+  postStatus: {
+    textAlign: "center",
+    color: "#ffc107",
+    paddingTop: "5px",
+    fontSize: "12px",
+    minHeight: "15px",
   },
   table: {
     width: "100%",

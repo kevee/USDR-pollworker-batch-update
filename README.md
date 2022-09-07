@@ -11,7 +11,6 @@
 
 # TODO
 
-- add data validation before post (all field not empty?)
 - load existing status data from Airtable?
 - add tests?
 
