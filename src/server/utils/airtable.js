@@ -30,10 +30,17 @@ const getWorkerStatus = (workerRecord, config) => {
     workerRecord.fields[
       config["Field name: Poll Workers - Election Day Status"]
     ];
+  let mappedStatus;
   if (rawStatus === config["Field value: Poll Workers - status - Attended"]) {
-    return WORKER_STATUSES.ATTENDED;
+    mappedStatus = WORKER_STATUSES.ATTENDED;
+  } else if (
+    rawStatus === config["Field value: Poll Workers - status - No show"]
+  ) {
+    mappedStatus = WORKER_STATUSES.NO_SHOW;
+  } else {
+    mappedStatus = "";
   }
-  return WORKER_STATUSES.NO_SHOW;
+  return mappedStatus;
 };
 
 exports.getPollWorkers = async (configId, precinctId) => {
