@@ -45,8 +45,8 @@ function App() {
     async function getWorkerData() {
       const searchParams = window.location.search;
       const request = await axios.get(`/workers${searchParams}`);
-      setWorkers(request.data.workerData);
-      setInitialWorkerStatuses(request.data.workerData);
+      setWorkers(request.data.workerData || []);
+      setInitialWorkerStatuses(request.data.workerData || []);
       setIsLoadingWorkers(false);
     }
     getPrecinctData().catch((err) => {
