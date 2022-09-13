@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     position: "fixed",
+    background: "#FFF",
     borderBottom: "1px solid #e9e9e9",
     top: 0,
     left: 0,
