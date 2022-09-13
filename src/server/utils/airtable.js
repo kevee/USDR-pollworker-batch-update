@@ -20,7 +20,7 @@ const getCountyConfig = async (configId) => {
     );
     return configRecord.fields;
   } catch (err) {
-    logger.error(err);
+    logger.error('Error in getCountyConfig:', err);
     return {};
   }
 };
@@ -81,7 +81,7 @@ exports.getPollWorkers = async (configId, precinctId) => {
 
     return { workerData };
   } catch (err) {
-    logger.error(err);
+    logger.error('Error in getPollWorkers:', err);
     return {};
   }
 };
@@ -106,9 +106,13 @@ exports.getPrecinct = async (configId, precinctId) => {
     const instructions = config["UI Instructions"];
     const description =
       precinctRecord.fields[config["Field name: Precinct - Description"]];
+    
+    // get precinct lead data
     const leadRecord =
       precinctRecord.fields[config["Field name: Precinct - Lead"]];
-
+    if(!leadRecord){
+      throw new Error("Precinct lead not set");
+    }
     const workerRecord = await base(config["Poll Workers table ID"]).find(
       leadRecord[0]
     );
@@ -128,7 +132,7 @@ exports.getPrecinct = async (configId, precinctId) => {
 
     return data;
   } catch (err) {
-    logger.error(err);
+    logger.error('Error in getPrecinct:', err);
     return {};
   }
 };
@@ -173,7 +177,7 @@ exports.updateWorkerStatuses = async (configId, workerStatuses) => {
     }
     return true;
   } catch (err) {
-    logger.error(err);
+    logger.error('Error in getWorkerStatuses:', err);
     return false;
   }
 };
