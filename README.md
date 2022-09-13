@@ -9,9 +9,6 @@
 - yarn run build
 - node index.js
 
-# TODO
-
-- load existing status data from Airtable?
-- add tests?
+# Manual testing
 
 Test URL: http://localhost:3000/?configId=recOOlwTWhli69aSf&precinctId=recFlg6PQZZRiNpWa

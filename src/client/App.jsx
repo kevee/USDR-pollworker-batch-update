@@ -3,8 +3,13 @@ import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, css } from "aphrodite/no-important";
 
+const WORKER_STATUSES = {
+  ATTENDED: "ATTENDED",
+  NO_SHOW: "NO_SHOW",
+};
+
 function App() {
-  const [workers, setWorker] = useState([]);
+  const [workers, setWorkers] = useState([]);
   const [workerStatuses, setWorkerStatuses] = useState({});
   const [precinct, setPrecinct] = useState({});
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(true);
@@ -29,19 +34,28 @@ function App() {
       setIsLoadingPrecinct(false);
     }
 
+    const setInitialWorkerStatuses = (workerData) => {
+      const initialWorkerStatuses = {};
+      workerData.forEach((worker) => {
+        initialWorkerStatuses[worker.id] = worker.status;
+      });
+      setWorkerStatuses(initialWorkerStatuses);
+    };
+
     async function getWorkerData() {
       const searchParams = window.location.search;
       const request = await axios.get(`/workers${searchParams}`);
-      setWorker(request.data.workerData);
+      setWorkers(request.data.workerData);
+      setInitialWorkerStatuses(request.data.workerData);
       setIsLoadingWorkers(false);
     }
     getPrecinctData().catch((err) => {
-      if(err){
+      if (err) {
         setHasError(true);
       }
     });
     getWorkerData().catch((err) => {
-      if(err){
+      if (err) {
         setHasError(true);
       }
     });
@@ -51,7 +65,7 @@ function App() {
     const workerId = e.target.id;
     const workerAttendanceStatus = e.target.value;
     const newState = { ...workerStatuses };
-    if(workerStatuses[workerId] === workerAttendanceStatus){
+    if (workerStatuses[workerId] === workerAttendanceStatus) {
       newState[workerId] = "";
     } else {
       newState[workerId] = workerAttendanceStatus;
@@ -61,13 +75,13 @@ function App() {
 
   const countMissingStatuses = () => {
     const numMissingStatuses = workers.reduce((currentCount, worker) => {
-      if(!workerStatuses[worker.id]){
+      if (!workerStatuses[worker.id]) {
         return currentCount + 1;
       }
       return currentCount;
     }, 0);
     return numMissingStatuses;
-  }
+  };
 
   const numMissingStatuses = countMissingStatuses();
 
@@ -93,7 +107,12 @@ function App() {
   };
 
   if (hasError) {
-    return <div className={css(styles.loading)}>Something went wrong loading your data, please try again or contact support</div>;
+    return (
+      <div className={css(styles.loading)}>
+        Something went wrong loading your data, please try again or contact
+        support
+      </div>
+    );
   }
 
   if (isLoadingWorkers || isLoadingPrecinct) {
@@ -111,7 +130,9 @@ function App() {
               <div className={css(styles.infoText)}>{precinct.description}</div>
             </div>
             <div className={css(styles.infoRow)}>
-              <div className={css(styles.infoLabel)}>{precinct.leadTitle}: </div>
+              <div className={css(styles.infoLabel)}>
+                {precinct.leadTitle}:{" "}
+              </div>
               <div className={css(styles.infoText)}>{precinct.lead}</div>
             </div>
             <div className={css(styles.infoRow)}>
@@ -127,7 +148,9 @@ function App() {
               type="submit"
               className={css(styles.submit)}
               onClick={handleSubmit}
-            >Submit Attendance</button>
+            >
+              Submit Attendance
+            </button>
             <div className={css(styles.selectionStatus)}>
               {numMissingStatuses} people pending
             </div>
@@ -160,12 +183,12 @@ function App() {
                   <button
                     className={css([
                       styles.actionButton,
-                      workerStatuses[worker.id] === "yes"
+                      workerStatuses[worker.id] === WORKER_STATUSES.ATTENDED
                         ? styles.attendancePositive
                         : "",
                     ])}
                     onClick={setStatus}
-                    value="yes"
+                    value={WORKER_STATUSES.ATTENDED}
                     id={worker.id}
                     type="button"
                   >
@@ -174,12 +197,12 @@ function App() {
                   <button
                     className={css([
                       styles.actionButton,
-                      workerStatuses[worker.id] === "no"
+                      workerStatuses[worker.id] === WORKER_STATUSES.NO_SHOW
                         ? styles.attendanceNegative
                         : "",
                     ])}
                     onClick={setStatus}
-                    value="no"
+                    value={WORKER_STATUSES.NO_SHOW}
                     id={worker.id}
                     type="button"
                   >

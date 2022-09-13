@@ -1,12 +1,17 @@
 const Airtable = require("airtable");
 const { logger } = require("./logger");
 
+const WORKER_STATUSES = {
+  ATTENDED: "ATTENDED",
+  NO_SHOW: "NO_SHOW",
+};
+
 const configBaseAirtableConnection = new Airtable({
   apiKey: process.env.AIRTABLE_API_KEY,
 });
 
 const getCountyConfig = async (configId) => {
-  try{
+  try {
     const configBase = configBaseAirtableConnection.base(
       process.env.CONFIG_BASE_ID
     );
@@ -20,8 +25,19 @@ const getCountyConfig = async (configId) => {
   }
 };
 
+const getWorkerStatus = (workerRecord, config) => {
+  const rawStatus =
+    workerRecord.fields[
+      config["Field name: Poll Workers - Election Day Status"]
+    ];
+  if (rawStatus === config["Field value: Poll Workers - status - Attended"]) {
+    return WORKER_STATUSES.ATTENDED;
+  }
+  return WORKER_STATUSES.NO_SHOW;
+};
+
 exports.getPollWorkers = async (configId, precinctId) => {
-  try{
+  try {
     const config = await getCountyConfig(configId);
 
     // TEMP: USE .env to protect my own API key
@@ -51,20 +67,20 @@ exports.getPollWorkers = async (configId, precinctId) => {
           workerRecord.fields[config["Field name: Poll Workers - Last name"]],
         phone: workerRecord.fields[config["Field name: Poll Workers - Phone"]],
         email: workerRecord.fields[config["Field name: Poll Workers - Email"]],
+        status: getWorkerStatus(workerRecord, config),
       };
       workerData.push(relevantData);
     }
 
     return { workerData };
-  } catch(err){
+  } catch (err) {
     logger.error(err);
     return {};
   }
-  
 };
 
 exports.getPrecinct = async (configId, precinctId) => {
-  try{
+  try {
     const config = await getCountyConfig(configId);
     // TEMP: USE .env to protect my own API key
     // const countyBaseAirtableConnection = new Airtable({ apiKey: config['API Key'] });
@@ -104,7 +120,7 @@ exports.getPrecinct = async (configId, precinctId) => {
     };
 
     return data;
-  } catch(err){
+  } catch (err) {
     logger.error(err);
     return {};
   }
@@ -123,7 +139,7 @@ exports.updateWorkerStatuses = async (configId, workerStatuses) => {
     const recordsToUpdate = Object.keys(workerStatuses).reduce(
       (store, workerId) => {
         const electionDayStatus =
-          workerStatuses[workerId] === "yes"
+          workerStatuses[workerId] === WORKER_STATUSES.ATTENDED
             ? config["Field value: Poll Workers - status - Attended"]
             : config["Field value: Poll Workers - status - No show"];
         const recordData = {
